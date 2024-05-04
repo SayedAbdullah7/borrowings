@@ -15,16 +15,10 @@ use App\Http\Controllers\BorrowingController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 
 
 Route::prefix('borrowings')->group(function () {
     Route::post('/users/{userId}/books/{bookId}/borrow', [BorrowingController::class, 'borrowBook']); // Borrow a book
-    Route::post('/users/{userId}/books/{bookId}/return', [BorrowingController::class, 'returnBook']); // Return a book
-    Route::get('/users/{userId}/', [BorrowingController::class, 'getUserBorrowings']); // Get user's borrowings
     Route::get('/all', [BorrowingController::class, 'getAllBorrowings']); // Get all borrowings
 });
 

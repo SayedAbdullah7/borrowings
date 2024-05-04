@@ -12,19 +12,12 @@ class BorrowingController extends Controller
 {
     public function borrowBook(Request $request, $userId, $bookId)
     {
-        $user = User::find($userId);
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+
+        $isBorrowed =Borrowing::where('book_id', $bookId)->where('return_at', '>', now())->first();
+        if ($isBorrowed) {
+            return response()->json(['error' => 'The book is already borrowed.'], 400);
         }
 
-        $book = Book::find($bookId);
-        if (!$book) {
-            return response()->json(['error' => 'Book not found'], 404);
-        }
-
-        if (!$book->available) {
-            return response()->json(['error' => 'Book not available for borrowing'], 400);
-        }
 
         $returnAt = $request->input('return_at');
         if (!$returnAt || !\Carbon\Carbon::parse($returnAt)->isFuture()) {
@@ -33,16 +26,13 @@ class BorrowingController extends Controller
 
         // Create a borrowing record
         $borrowing = new Borrowing();
-        $borrowing->user_id = $user->id;
-        $borrowing->book_id = $book->id;
+        $borrowing->user_id = $userId;
+        $borrowing->book_id = $bookId;
         $borrowing->borrowed_at = now();
         $borrowing->return_at = $returnAt;
         $borrowing->status = 'borrowed';
         $borrowing->save();
 
-        // Update book availability
-        $book->available = false;
-        $book->save();
 
         return response()->json(['message' => 'Book borrowed successfully'], 200);
     }
